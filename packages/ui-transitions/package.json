@@ -32,7 +32,7 @@
     "vue": "catalog:"
   },
   "devDependencies": {
-    "@unocss/reset": "catalog:",
+    "@unocss/reset": "^66.6.8",
     "@vitejs/plugin-vue": "^6.0.6",
     "unocss": "catalog:",
     "vite": "catalog:",

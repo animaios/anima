@@ -29,7 +29,9 @@
     "@pixiv/three-vrm": "^3.5.2",
     "@pixiv/three-vrm-animation": "^3.5.2",
     "@pixiv/three-vrm-core": "^3.5.2",
+    "@proj-airi/stage-shared": "workspace:*",
     "@proj-airi/ui": "workspace:*",
+    "@tresjs/cientos": "^5.7.0",
     "@tresjs/core": "^5.8.0",
     "@tresjs/post-processing": "^3.7.1",
     "@vueuse/core": "^14.2.1",
@@ -42,6 +44,7 @@
     "wlipsync": "^1.3.0"
   },
   "devDependencies": {
+    "@types/culori": "^4.0.1",
     "@types/three": "^0.184.0",
     "vitest": "catalog:vitest",
     "vue-tsc": "^3.2.6"

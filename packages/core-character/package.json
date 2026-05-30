@@ -31,5 +31,11 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc --noEmit"
-  }
+  },
+  "dependencies": {
+    "@moeru/std": "catalog:",
+    "@proj-airi/stream-kit": "workspace:^",
+    "clustr": "^1.0.2"
+  },
+  "devDependencies": {}
 }

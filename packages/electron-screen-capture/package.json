@@ -35,7 +35,7 @@
   },
   "peerDependencies": {
     "@guiiai/logg": ">=1 <2",
-    "electron": ">=40 <43",
+    "electron": ">=40 <42",
     "vue": ">=3"
   },
   "dependencies": {
@@ -44,8 +44,10 @@
   "devDependencies": {
     "@electron-toolkit/preload": "catalog:",
     "@moeru/eventa": "catalog:",
+    "@moeru/std": "catalog:",
     "async-mutex": "catalog:",
-    "nanoid": "catalog:"
+    "nanoid": "catalog:",
+    "vite": "catalog:"
   },
   "inlinedDependencies": {
     "@electron-toolkit/preload": "3.0.2",
