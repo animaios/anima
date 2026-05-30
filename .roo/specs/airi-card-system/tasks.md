@@ -72,21 +72,21 @@
 
 ## Phase 5: UI Components — CardCreationDialog Expansion
 
-- [ ] **T5.1**: Add Acting tab section to [`CardCreationDialog.vue`](packages/stage-pages/src/pages/settings/airi-card/components/CardCreationDialog.vue)
+- [x] **T5.1**: Add Acting tab section to [`CardCreationDialog.vue`](packages/stage-pages/src/pages/settings/airi-card/components/CardCreationDialog.vue)
   - `selectedActingModelExpressionPrompt`, `selectedActingSpeechExpressionPrompt`, `selectedActingSpeechMannerismPrompt` refs
   - `selectedActingIdleAnimations` ref
   - `actingSpeechCapabilities` and `actingSpeechCapabilitiesLoading` refs
-- [ ] **T5.2**: Add Modules tab expansion — consciousness moduleConfigs, speech pitch/rate/ssml/language, VRM/Live2D model refs, background selection, display model
-- [ ] **T5.3**: Add Artistry tab at top-level — moved from modules, add autonomousMonitorEnabled, autonomousHistoryDepth, config JSON editor
-- [ ] **T5.4**: Add Proactivity tab — heartbeats config (all HeartbeatConfig fields), dreamState toggle, grounding toggle
-- [ ] **T5.5**: Add Generation tab — provider, model, known limits (maxTokens, temperature, topP, contextWidth), reasoningFallback, compaction strategy, advanced JSON
-- [ ] **T5.6**: Implement `loadActingSpeechCapabilities(providerId)` — fetches expression tags and mannerisms from speech provider
-- [ ] **T5.7**: Implement acting expression/mannerism insertion helpers: `insertModelExpression()`, `insertSpeechTag()`, `insertSpeechMannerism()`, `appendUniqueLine()`
-- [ ] **T5.8**: Add `actingModelExpressionOptions`, `actingIdleAnimationOptions`, `actingExpressionTags`, `actingGroupedExpressionTags`, `actingMannerismOptions` computed properties
-- [ ] **T5.9**: Update `saveCard()` to persist all new tab fields into the card's `extensions.airi`
-- [ ] **T5.10**: Update `initializeCard()` to load all new fields from existing card in edit mode
-- [ ] **T5.11**: Update tab definitions (`Tab` interface, `tabs` array, `activeTab` computed) to include all 6 tabs
-- [ ] **T5.12**: Add generation provider/model options computed properties and normalization helpers (`normalizeOptionalNumber`)
+- [x] **T5.2**: Add Modules tab expansion — consciousness moduleConfigs, speech pitch/rate/ssml/language, VRM/Live2D model refs, background selection, display model
+- [x] **T5.3**: Add Artistry tab at top-level — moved from modules, add autonomousMonitorEnabled, autonomousHistoryDepth, config JSON editor
+- [x] **T5.4**: Add Proactivity tab — heartbeats config (all HeartbeatConfig fields), dreamState toggle, grounding toggle
+- [x] **T5.5**: Add Generation tab — provider, model, known limits (maxTokens, temperature, topP, contextWidth), reasoningFallback, compaction strategy, advanced JSON
+- [x] **T5.6**: Implement `loadActingSpeechCapabilities(providerId)` — fetches expression tags and mannerisms from speech provider
+- [x] **T5.7**: Implement acting expression/mannerism insertion helpers: `insertModelExpression()`, `insertSpeechTag()`, `insertSpeechMannerism()`, `appendUniqueLine()`
+- [x] **T5.8**: Add `actingModelExpressionOptions`, `actingIdleAnimationOptions`, `actingExpressionTags`, `actingGroupedExpressionTags`, `actingMannerismOptions` computed properties
+- [x] **T5.9**: Update `saveCard()` to persist all new tab fields into the card's `extensions.airi`
+- [x] **T5.10**: Update `initializeCard()` to load all new fields from existing card in edit mode
+- [x] **T5.11**: Update tab definitions (`Tab` interface, `tabs` array, `activeTab` computed) to include all 6 tabs
+- [x] **T5.12**: Add generation provider/model options computed properties and normalization helpers (`normalizeOptionalNumber`)
 
 ## Phase 6: UI Components — CardDetailDialog Expansion
 

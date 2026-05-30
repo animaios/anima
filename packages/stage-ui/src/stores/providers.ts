@@ -70,6 +70,28 @@ const ALIYUN_NLS_REGIONS = [
   'cn-shenzhen-internal',
 ] as const
 
+export interface SpeechExpressionTagInfo {
+  category: string
+  tag: string
+  description?: string
+}
+
+export interface SpeechMannerismInfo {
+  id: string
+  label: string
+  description?: string
+}
+
+export interface SpeechCapabilitiesInfo {
+  supportsPresets?: boolean
+  supportsExpressionTags?: boolean
+  supportsMannerisms?: boolean
+  expressionTags?: SpeechExpressionTagInfo[]
+  mannerisms?: SpeechMannerismInfo[]
+  supportsSSML?: boolean
+  supportsPitch?: boolean
+}
+
 type AliyunNlsRegion = (typeof ALIYUN_NLS_REGIONS)[number]
 
 export interface ProviderMetadata {
@@ -144,6 +166,7 @@ export interface ProviderMetadata {
       config: Record<string, unknown>,
       hooks?: { onProgress?: (progress: ProgressInfo) => Promise<void> | void },
     ) => Promise<void>
+    getSpeechCapabilities?: (config: Record<string, unknown>) => Promise<SpeechCapabilitiesInfo | null>
   }
   validators: {
     /**
