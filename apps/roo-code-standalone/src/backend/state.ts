@@ -163,14 +163,17 @@ export function upsertTask(item: HistoryItem): void {
   if (!item.id) return
   tasks.set(item.id, item)
 
-  // Single code path for adding a task to both the tasks Map and
-  // state.taskHistory. Callers (e.g. the newTask ws handler) must not
-  // separately patch state.taskHistory — doing so would cause the state
-  // handler's taskHistory→tasks sync to re-add the item on next patch.
+  // Single code path for adding/updating a task in both the tasks Map
+  // and state.taskHistory. Always writes — creates new or overwrites
+  // existing — so callers (cancelTask, usage updates) never desync.
   const hist = state.taskHistory ?? []
-  // Deduplicate by id in case of replay from a client state sync.
-  if (!hist.some((h) => h.id === item.id)) {
+  const idx = hist.findIndex((h) => h.id === item.id)
+  if (idx === -1) {
     state.taskHistory = [...hist, item]
+  } else {
+    const updated = [...hist]
+    updated[idx] = item
+    state.taskHistory = updated
   }
 }
 

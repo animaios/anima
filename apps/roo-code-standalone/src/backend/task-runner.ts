@@ -16,7 +16,7 @@
  * providers — anything else can route through OpenRouter.
  */
 
-import { getState, patchState, upsertTask } from './state.js'
+import { getState, patchState, upsertTask, getTask } from './state.js'
 import type { ExtensionState } from '@roo-code/types'
 
 // ---------------------------------------------------------------------------
@@ -141,19 +141,15 @@ export async function runTask(taskId: string, text: string, onUpdate?: () => voi
           }
         }
       } else if (chunk.type === 'usage') {
-        // Store cost info on the task record via patchState (immutable).
-        const s = getState()
-        const tasks = s.taskHistory || []
-        const idx = tasks.findIndex((t) => t.id === taskId)
-        if (idx !== -1) {
-          const updated = [...tasks]
-          updated[idx] = {
-            ...updated[idx],
-            tokensIn: chunk.inputTokens || updated[idx].tokensIn || 0,
-            tokensOut: chunk.outputTokens || updated[idx].tokensOut || 0,
-            totalCost: chunk.totalCost || updated[idx].totalCost || 0,
-          }
-          patchState({ taskHistory: updated } as Partial<ExtensionState>)
+        // Store cost info on the task record via upsertTask (O(1) + sync).
+        const task = getTask(taskId)
+        if (task) {
+          upsertTask({
+            ...task,
+            tokensIn: chunk.inputTokens || task.tokensIn || 0,
+            tokensOut: chunk.outputTokens || task.tokensOut || 0,
+            totalCost: chunk.totalCost || task.totalCost || 0,
+          })
           onUpdate?.()
         }
       }
@@ -221,7 +217,7 @@ function appendMessage(message: ClineMessage, onUpdate?: () => void): void {
  * Pick the right streaming function for the configured provider.
  */
 function streamLLM(
-  apiConfig: Record<string, unknown>,
+  apiConfig: NonNullable<ExtensionState['apiConfiguration']>,
   systemPrompt: string,
   messages: LLMMessage[],
 ): AsyncGenerator<StreamChunk> {
@@ -246,12 +242,18 @@ function streamLLM(
 // ---------------------------------------------------------------------------
 
 async function* streamAnthropic(
-  apiConfig: Record<string, unknown>,
+  apiConfig: NonNullable<ExtensionState['apiConfiguration']>,
   systemPrompt: string,
   messages: LLMMessage[],
 ): AsyncGenerator<StreamChunk> {
   const apiKey = String(apiConfig.apiKey ?? '')
   const model = String(apiConfig.apiModelId ?? apiConfig.modelId ?? 'claude-sonnet-4-5')
+
+  // Anthropic expects content as array of content blocks, not a plain string.
+  const anthropicMessages = messages.map((m) => ({
+    role: m.role,
+    content: [{ type: 'text' as const, text: m.content }],
+  }))
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -265,7 +267,7 @@ async function* streamAnthropic(
       model,
       max_tokens: 4096,
       system: systemPrompt,
-      messages,
+      messages: anthropicMessages,
       stream: true,
     }),
   })
@@ -300,7 +302,7 @@ async function* streamAnthropic(
 }
 
 async function* streamOpenAI(
-  apiConfig: Record<string, unknown>,
+  apiConfig: NonNullable<ExtensionState['apiConfiguration']>,
   systemPrompt: string,
   messages: LLMMessage[],
 ): AsyncGenerator<StreamChunk> {
@@ -358,7 +360,7 @@ async function* streamOpenAI(
 }
 
 async function* streamGemini(
-  apiConfig: Record<string, unknown>,
+  apiConfig: NonNullable<ExtensionState['apiConfiguration']>,
   systemPrompt: string,
   messages: LLMMessage[],
 ): AsyncGenerator<StreamChunk> {
@@ -418,7 +420,7 @@ async function* streamGemini(
 }
 
 async function* streamOpenRouter(
-  apiConfig: Record<string, unknown>,
+  apiConfig: NonNullable<ExtensionState['apiConfiguration']>,
   systemPrompt: string,
   messages: LLMMessage[],
 ): AsyncGenerator<StreamChunk> {

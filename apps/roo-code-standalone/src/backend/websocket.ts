@@ -156,7 +156,9 @@ function handleMessage(ws: WebSocket, message: Record<string, unknown>): void {
       if (taskId && typeof taskId === 'string') {
         const task = getTask(taskId)
         if (task) {
-          ;(task as any).status = 'cancelled'
+          // HistoryItem.status is a narrow zod enum that does not include
+          // 'cancelled', so widen just this field for the cancel operation.
+          ;(task as Omit<HistoryItem, 'status'> & { status: string }).status = 'cancelled'
           upsertTask(task)
           send(ws, { type: 'taskUpdated', task, requestId })
         }
