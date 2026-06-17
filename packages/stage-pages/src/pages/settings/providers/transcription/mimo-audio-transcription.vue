@@ -22,6 +22,7 @@ import { computed, onMounted } from 'vue'
 const providerId = 'mimo-audio-transcription'
 const hearingStore = useHearingStore()
 const providersStore = useProvidersStore()
+// deepsource:issue=JS-0323
 const { providers } = storeToRefs(providersStore) as { providers: RemovableRef<Record<string, any>> }
 
 const apiKey = computed({
@@ -61,7 +62,9 @@ onMounted(async () => {
 
 async function handleGenerateTranscription(file: File) {
   const provider =
-    await providersStore.getProviderInstance<TranscriptionProviderWithExtraOptions<string, any>>(providerId)
+    await providersStore.getProviderInstance<TranscriptionProviderWithExtraOptions<string, Record<string, unknown>>>(
+      providerId,
+    )
   if (!provider) throw new Error('Failed to initialize transcription provider')
 
   return await hearingStore.transcription(providerId, provider, model.value, file, 'json')
