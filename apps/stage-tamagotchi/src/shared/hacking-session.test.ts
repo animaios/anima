@@ -1,9 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import type { ActivationConfig, HackingSessionState, SummaryMessage } from './hacking-session'
+import type {
+  ActivationConfig,
+  HackingSessionState,
+  HackingSessionStatePayload,
+  SummaryMessage,
+} from './hacking-session'
 
 describe('HackingSessionState interface', () => {
   it('should allow inactive state with null sessionId', () => {
-    const state: HackingSessionState = {
+    const state: HackingSessionStatePayload = {
       sessionId: null,
       state: 'inactive',
     }
@@ -15,7 +20,7 @@ describe('HackingSessionState interface', () => {
   })
 
   it('should allow starting state with sessionId and processInfo', () => {
-    const state: HackingSessionState = {
+    const state: HackingSessionStatePayload = {
       sessionId: '550e8400-e29b-41d4-a716-446655440000',
       state: 'starting',
       processInfo: {
@@ -31,7 +36,7 @@ describe('HackingSessionState interface', () => {
   })
 
   it('should allow active state with sessionId and processInfo', () => {
-    const state: HackingSessionState = {
+    const state: HackingSessionStatePayload = {
       sessionId: '550e8400-e29b-41d4-a716-446655440000',
       state: 'active',
       processInfo: {
@@ -46,7 +51,7 @@ describe('HackingSessionState interface', () => {
   })
 
   it('should allow failed state with null sessionId and lastError', () => {
-    const state: HackingSessionState = {
+    const state: HackingSessionStatePayload = {
       sessionId: null,
       state: 'failed',
       lastError: 'Port 3210 is already in use',
@@ -59,10 +64,10 @@ describe('HackingSessionState interface', () => {
   })
 
   it('should support all four FSM states', () => {
-    const states: Array<HackingSessionState['state']> = ['inactive', 'starting', 'active', 'failed']
+    const states: Array<HackingSessionState> = ['inactive', 'starting', 'active', 'failed']
 
     states.forEach((stateValue) => {
-      const state: HackingSessionState = {
+      const state: HackingSessionStatePayload = {
         sessionId: stateValue === 'inactive' || stateValue === 'failed' ? null : 'test-id',
         state: stateValue,
       }
@@ -194,7 +199,7 @@ describe('Interface integration', () => {
   it('should correlate sessionId between HackingSessionState and SummaryMessage', () => {
     const sessionId = '550e8400-e29b-41d4-a716-446655440000'
 
-    const state: HackingSessionState = {
+    const state: HackingSessionStatePayload = {
       sessionId,
       state: 'active',
       processInfo: { pid: 12345, port: 3210 },
@@ -213,7 +218,7 @@ describe('Interface integration', () => {
 
   it('should represent a complete activation flow', () => {
     // 1. Start with inactive state
-    const inactiveState: HackingSessionState = {
+    const inactiveState: HackingSessionStatePayload = {
       sessionId: null,
       state: 'inactive',
     }
@@ -232,7 +237,7 @@ describe('Interface integration', () => {
 
     // 3. Transition to starting state
     const sessionId = '550e8400-e29b-41d4-a716-446655440000'
-    const startingState: HackingSessionState = {
+    const startingState: HackingSessionStatePayload = {
       sessionId,
       state: 'starting',
       processInfo: { pid: 12345, port: 3210 },
@@ -241,7 +246,7 @@ describe('Interface integration', () => {
     expect(startingState.sessionId).not.toBeNull()
 
     // 4. Transition to active state
-    const activeState: HackingSessionState = {
+    const activeState: HackingSessionStatePayload = {
       sessionId,
       state: 'active',
       processInfo: { pid: 12345, port: 3210 },

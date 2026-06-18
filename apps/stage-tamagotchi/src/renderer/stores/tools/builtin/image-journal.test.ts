@@ -41,7 +41,7 @@ describe('image_journal config snapshot', () => {
       nanobananaApiKey: { value: 'AIza-test' },
       nanobananaModel: { value: 'gemini-3.1-flash-image-preview' },
       nanobananaResolution: { value: '1K' },
-    })
+    } as any)
 
     expect(config).toEqual({
       provider: 'comfyui',

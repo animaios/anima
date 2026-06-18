@@ -85,13 +85,13 @@ export class NanoBananaProvider implements ArtistryProvider {
       const responseParts: ResponsePart[] =
         (json as { candidates?: Array<{ content?: { parts?: ResponsePart[] } }> }).candidates?.[0]?.content?.parts || []
       const imagePart = responseParts.find(
-        (p): p is ResponsePart & { inlineData: { data: string } } =>
+        (p): p is ResponsePart & { inlineData: { mimeType?: string; data: string } } =>
           'inlineData' in p && typeof p.inlineData?.data === 'string',
       )
       const inlineData = imagePart?.inlineData
 
       if (inlineData?.data) {
-        const dataUrl = `data:${inlineData.mimeType};base64,${inlineData.data}`
+        const dataUrl = `data:${inlineData.mimeType ?? 'image/png'};base64,${inlineData.data}`
         this.updateStatus(jobId, { status: 'succeeded', progress: 100, imageUrl: dataUrl })
       } else {
         throw new Error('No image data returned from Nano Banana')

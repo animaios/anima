@@ -34,7 +34,14 @@ import { setupGodotStageManager } from './services/airi/godot-stage'
 import { setupBuiltInServer } from './services/airi/http-server'
 import { setupMcpStdioManager } from './services/airi/mcp-servers'
 import { setupPluginHost } from './services/airi/plugins'
+import { defineInvokeHandler } from '@moeru/eventa'
 import { setupHackingSessionService } from './services/hackingSession/HackingSessionService'
+import { setupCodeBridgeService } from './services/hackingSession/CodeBridgeService'
+import {
+  electronHackingSessionActivate,
+  electronHackingSessionDeactivate,
+  electronHackingSessionStateChanged,
+} from '../shared/ipc/hackingSession'
 import { setupArtistryBridge } from './services/airi/widgets/artistry-bridge'
 import { setupAutoUpdater } from './services/electron/auto-updater'
 import { setupGlobalShortcutService } from './services/electron/global-shortcut'
@@ -150,6 +157,11 @@ app
       build: ({ dependsOn }) => createI18n({ messages, locale: dependsOn.appConfig.get()?.language }),
     })
 
+    const eventaContextService = injeca.provide('libs:eventa-context', () => {
+      const { context } = createContext(ipcMain)
+      return context
+    })
+
     const serverChannel = injeca.provide('modules:channel-server', {
       dependsOn: { app: electronApp, lifecycle },
       build: async ({ dependsOn }) => setupServerChannel(dependsOn),
@@ -169,12 +181,13 @@ app
 
     // Register CodeBridgeService
     const codeBridgeService = injeca.provide('services:code-bridge', {
-      dependsOn: { hackingSession: hackingSessionService },
+      dependsOn: { hackingSession: hackingSessionService, eventaContext: eventaContextService },
       build: ({ dependsOn }) =>
         setupCodeBridgeService(dependsOn.hackingSession, {
           port: dependsOn.hackingSession.getPort?.() ?? 0,
           sessionId: dependsOn.hackingSession.getState().sessionId ?? '',
           bridgeToken: dependsOn.hackingSession.getBridgeToken?.() ?? '',
+          context: dependsOn.eventaContext,
         }),
     })
 
@@ -309,13 +322,29 @@ app
         onboardingWindow: onboardingWindowManager,
         widgetsWindow: widgetsManager,
         artistryConfig,
+        eventaContext: eventaContextService,
+        hackingSessionService,
+        codeBridgeService,
       },
       callback: async (deps) => {
-        const { context } = createContext(ipcMain)
+        const context = deps.eventaContext
         await setupArtistryBridge({
           widgetsManager: deps.widgetsWindow,
           context,
           artistryConfig: deps.artistryConfig,
+        })
+
+        // Bridge HackingSessionService to Eventa IPC
+        deps.hackingSessionService.onStateChange((payload) => {
+          context.emit(electronHackingSessionStateChanged, payload)
+        })
+
+        defineInvokeHandler(context, electronHackingSessionActivate, async (config) => {
+          return deps.hackingSessionService.activate(config)
+        })
+
+        defineInvokeHandler(context, electronHackingSessionDeactivate, async () => {
+          return deps.hackingSessionService.deactivate()
         })
       },
     })

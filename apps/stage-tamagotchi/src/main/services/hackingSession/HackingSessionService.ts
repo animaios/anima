@@ -21,54 +21,12 @@ import { onAppBeforeQuit } from '../../libs/bootkit/lifecycle'
  */
 import type {
   HackingSessionState,
-  CodeMode,
-  ProviderConfig,
   ActivationConfig,
   ProcessInfo,
+  HackingSessionStatePayload,
 } from '../../../shared/hacking-session'
 
-/**
- * Code mode selection for the Code module.
- */
-// CodeMode now imported from shared/hacking-session
-
-/**
- * Provider configuration for Code module.
- */
-export interface ProviderConfig {
-  name: string
-  apiKey: string
-  baseUrl?: string
-  model?: string
-  temperature?: number
-  maxTokens?: number
-}
-
-/**
- * Activation configuration for starting a Hacking Session.
- */
-export interface ActivationConfig {
-  codeMode?: CodeMode
-  providerConfig?: ProviderConfig
-}
-
-/**
- * Process runtime information.
- */
-export interface ProcessInfo {
-  pid: number
-  port: number
-}
-
-/**
- * State payload emitted to renderer via Eventa.
- */
-export interface HackingSessionStatePayload {
-  sessionId: string | null
-  state: HackingSessionState
-  processInfo?: ProcessInfo
-  lastError?: string
-}
+export type { HackingSessionStatePayload } from '../../../shared/hacking-session'
 
 /**
  * Type for state change listeners.
@@ -588,6 +546,10 @@ export function setupHackingSessionService(options: HackingSessionServiceOptions
     return bridgeToken
   }
 
+  function getPortNum(): number | undefined {
+    return processInfo?.port
+  }
+
   // ── Cleanup on app quit ─────────────────────────────────────────────────
 
   onAppBeforeQuit(async () => {
@@ -604,6 +566,7 @@ export function setupHackingSessionService(options: HackingSessionServiceOptions
     deactivate,
     onStateChange,
     getState,
+    getPort: getPortNum,
     getBridgeToken,
   }
 }

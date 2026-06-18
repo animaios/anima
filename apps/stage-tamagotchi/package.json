@@ -136,6 +136,7 @@
     "vue-router": "catalog:",
     "vue-sonner": "catalog:",
     "web-haptics": "catalog:",
+    "ws": "catalog:",
     "whatwg-mimetype": "catalog:",
     "xsschema": "catalog:",
     "zod": "catalog:"
@@ -176,6 +177,7 @@
     "@types/splitpanes": "catalog:",
     "@types/three": "catalog:",
     "@types/whatwg-mimetype": "catalog:",
+    "@types/ws": "catalog:",
     "@types/yauzl": "catalog:",
     "@vitejs/plugin-vue": "catalog:",
     "@vue-macros/volar": "catalog:",

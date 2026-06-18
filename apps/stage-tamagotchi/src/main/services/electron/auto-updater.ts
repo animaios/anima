@@ -58,8 +58,12 @@ const LEGACY_OFFICIAL_UPDATER_CACHE_DIR = join(getLegacyCacheRoot(), 'ai.moeru.a
 const OFFICIAL_UPDATER_CACHE_DIRS = Array.from(new Set([OFFICIAL_UPDATER_CACHE_DIR, LEGACY_OFFICIAL_UPDATER_CACHE_DIR]))
 
 async function logToFile(level: 'INFO' | 'WARN' | 'ERROR' | 'DEBUG', message: string) {
-  await mkdir(UPDATER_DEBUG_CACHE_DIR, { recursive: true }).catch(() => { /* best-effort */ })
-  await appendFile(UPDATER_LOG_FILE, `${new Date().toISOString()} [${level}] ${message}\n`).catch(() => { /* best-effort */ })
+  await mkdir(UPDATER_DEBUG_CACHE_DIR, { recursive: true }).catch(() => {
+    /* best-effort */
+  })
+  await appendFile(UPDATER_LOG_FILE, `${new Date().toISOString()} [${level}] ${message}\n`).catch(() => {
+    /* best-effort */
+  })
 }
 
 async function cleanupStaleUpdateFiles() {
@@ -412,8 +416,8 @@ export function setupAutoUpdater(options: AutoUpdaterOptions = {}): AutoUpdater 
 
   autoUpdater.on('error', (error) => broadcastUpdaterError(error, 'autoUpdater error'))
   autoUpdater.on('checking-for-update', () => broadcast({ status: 'checking' }))
-  autoUpdater.on('update-available', (info: UpdateInfo) => broadcast({ status: 'available', info }))
-  autoUpdater.on('update-downloaded', (info: UpdateInfo) => broadcast({ status: 'downloaded', info }))
+  autoUpdater.on('update-available', (info: unknown) => broadcast({ status: 'available', info: info as UpdateInfo }))
+  autoUpdater.on('update-downloaded', (info: unknown) => broadcast({ status: 'downloaded', info: info as UpdateInfo }))
   autoUpdater.on('update-not-available', () =>
     broadcast({
       status: 'not-available',
@@ -424,18 +428,19 @@ export function setupAutoUpdater(options: AutoUpdaterOptions = {}): AutoUpdater 
       },
     }),
   )
-  autoUpdater.on('download-progress', (progress) =>
+  autoUpdater.on('download-progress', (progress: unknown) => {
+    const p = progress as { percent: number; bytesPerSecond: number; transferred: number; total: number }
     broadcast({
       ...state,
       status: 'downloading',
       progress: {
-        percent: progress.percent,
-        bytesPerSecond: progress.bytesPerSecond,
-        transferred: progress.transferred,
-        total: progress.total,
+        percent: p.percent,
+        bytesPerSecond: p.bytesPerSecond,
+        transferred: p.transferred,
+        total: p.total,
       },
-    }),
-  )
+    })
+  })
 
   void checkForUpdatesWithPreparedFeed().catch((error) => broadcastUpdaterError(error, 'checkForUpdates() failed'))
 

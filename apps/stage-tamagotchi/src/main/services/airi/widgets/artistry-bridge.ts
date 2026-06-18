@@ -1,5 +1,6 @@
 import type { createContext as createMainEventaContext } from '@moeru/eventa/adapters/electron/main'
 import type { ProvidedBy } from 'injeca'
+import type { InferOutput } from 'valibot'
 
 import type { artistryConfigSchema } from '../../../configs/artistry'
 import type { Config } from '../../../libs/electron/persistence'
@@ -466,8 +467,8 @@ export async function setupArtistryBridge(params: {
       params.artistryConfig.update({
         artistryProvider:
           payload.provider || params.artistryConfig.get()?.artistryProvider || DEFAULT_ARTISTRY_PROVIDER,
-        artistryGlobals: payload.globals ||
-          params.artistryConfig.get()?.artistryGlobals || {
+        artistryGlobals: (payload.globals ??
+          params.artistryConfig.get()?.artistryGlobals ?? {
             comfyuiServerUrl: 'http://localhost:8188',
             comfyuiSavedWorkflows: [],
             comfyuiActiveWorkflow: '',
@@ -478,7 +479,7 @@ export async function setupArtistryBridge(params: {
             nanobananaApiKey: '',
             nanobananaModel: 'gemini-3.1-flash-image-preview',
             nanobananaResolution: '1K',
-          },
+          }) as InferOutput<typeof artistryConfigSchema>['artistryGlobals'],
       })
 
       // Update character-level defaults (volatile only)

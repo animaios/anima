@@ -1,9 +1,8 @@
-import type { WebSocket } from 'ws'
+import WebSocket from 'ws'
 
 import { useLogg } from '@guiiai/logg'
-import { defineEventHandler } from '@moeru/eventa'
 
-import { electronCodeSummaryReceived } from '../../../shared/eventa'
+import { electronCodeSummaryReceived } from '../../../shared/ipc/hackingSession'
 
 /**
  * CodeBridgeService manages WebSocket connection to Code_Backend.
@@ -36,11 +35,13 @@ export function setupCodeBridgeService(
     sessionId: string
     /** Shared secret for WebSocket authentication */
     bridgeToken: string
+    /** Eventa context to emit events */
+    context: ReturnType<typeof import('@moeru/eventa/adapters/electron/main').createContext>['context']
   },
 ) {
   const log = useLogg('hacking-session:bridge').useGlobalConfig()
 
-  const { port, sessionId: initialSessionId, bridgeToken } = options
+  const { port, sessionId: initialSessionId, bridgeToken, context } = options
 
   // ── Internal State ──────────────────────────────────────────────────
 
@@ -81,11 +82,11 @@ export function setupCodeBridgeService(
       sendAuthHandshake()
     }
 
-    ws.onmessage = (event) => {
+    ws.onmessage = (event: WebSocket.MessageEvent) => {
       handleIncomingMessage(event.data)
     }
 
-    ws.onclose = (event) => {
+    ws.onclose = (event: WebSocket.CloseEvent) => {
       log.withFields({ code: event.code, reason: event.reason }).log('WebSocket disconnected')
       ws = null
       stopKeepalive()
@@ -107,7 +108,7 @@ export function setupCodeBridgeService(
       }
     }
 
-    ws.onerror = (error) => {
+    ws.onerror = (error: WebSocket.ErrorEvent) => {
       log.withError(error).error('WebSocket error')
       // Don't close here - let onclose handle cleanup
     }
@@ -221,7 +222,7 @@ export function setupCodeBridgeService(
 
     // Emit via Eventa (single event path)
     log.withFields({ sessionId: summary.sessionId }).log('Routing summary to Eventa')
-    defineEventHandler(undefined, electronCodeSummaryReceived, summary)
+    context.emit(electronCodeSummaryReceived, summary)
   }
 
   /**
