@@ -48,6 +48,7 @@ const forkSessionMock = vi.fn()
 const ensureSessionMock = vi.fn()
 
 const activeSessionIdRef = ref('session-1')
+const activeCardRef = ref<unknown>(undefined)
 const streamingMessageRef = ref<{ role: string; content: string; slices: unknown[]; tool_results: unknown[] }>({
   role: 'assistant',
   content: '',
@@ -140,7 +141,7 @@ vi.mock('./modules/consciousness', () => ({
 
 vi.mock('./modules/airi-card', () => ({
   useAiriCardStore: () => ({
-    activeCard: undefined,
+    activeCard: activeCardRef.value,
   }),
 }))
 
@@ -171,6 +172,7 @@ describe('chat orchestrator contract', () => {
     ioTracerMocks.spans.length = 0
     ioTracerMocks.startSpanMock.mockClear()
     activeSessionIdRef.value = 'session-1'
+    activeCardRef.value = undefined
     streamingMessageRef.value = { role: 'assistant', content: '', slices: [], tool_results: [] }
     currentGeneration = 1
 
@@ -295,6 +297,49 @@ describe('chat orchestrator contract', () => {
     expect(syntheticContextText).not.toContain('<module ')
     expect(syntheticContextText).toContain('[Context]')
     expect(syntheticContextText).toContain('- system:weather: sunny')
+  })
+
+  it('appends pattern disruptor guidance when the active card enables it', async () => {
+    activeCardRef.value = {
+      extensions: {
+        airi: {
+          modules: {
+            patternDisruptor: {
+              enabled: true,
+              randomWords: {
+                enabled: true,
+                wordCount: 1,
+                customPrompt: 'Pattern words: {{words}}',
+              },
+              synonyms: {
+                enabled: false,
+              },
+            },
+          },
+        },
+      },
+    }
+
+    let composedMessages: Message[] = []
+    llmStreamMock.mockImplementationOnce(async (_model, _chatProvider, messages, options) => {
+      composedMessages = messages
+      await options.onStreamEvent({ type: 'text-delta', text: 'hello' })
+      await options.onStreamEvent({ type: 'finish', finishReason: 'stop' })
+    })
+
+    const store = useChatOrchestratorStore()
+    await store.ingest('the garden feels quiet tonight', {
+      model: 'gpt-test',
+      chatProvider: provider,
+    })
+
+    const systemContent = (composedMessages[0] as Message & { content: unknown }).content
+    const systemText =
+      typeof systemContent === 'string'
+        ? systemContent
+        : (systemContent as { text: string }[]).map((p) => p.text).join('')
+    expect(systemText).toContain('Plugin toolset guidance.')
+    expect(systemText).toContain('Pattern words:')
   })
 
   it('emits special tokens for speech timeline handling during chat streaming', async () => {
