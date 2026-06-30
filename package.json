@@ -35,7 +35,7 @@
     "build:packages": "turbo run build -F=\"./packages/*\"",
     "build:engines": "turbo run build -F=\"./engines/*\"",
     "test": "vitest --coverage",
-    "test:run": "vitest run && pnpm run test-vishot:run && pnpm run test-ui:run",
+    "test:run": "vitest run --reporter=junit --outputFile=test-results.xml && pnpm run test-vishot:run && pnpm run test-ui:run",
     "test-vishot:run": "vitest run --config packages/vishot-runtime/vitest.config.ts",
     "test-ui:run": "vitest run --config packages/stage-ui/vitest.config.ts",
     "lint:swift": "pnpm -rF @proj-airi/stage-pocket run lint:swift",
